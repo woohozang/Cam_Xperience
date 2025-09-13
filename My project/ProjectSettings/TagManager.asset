@@ -5,6 +5,19 @@ TagManager:
   serializedVersion: 2
   tags:
   - LeftHand
+  - QDSUIToggleButton
+  - QDSUIToggleSwitch
+  - QDSUITooltip
+  - QDSUISharedThemeColor
+  - QDSUIAccentColor
+  - QDSUIBorderlessButton
+  - QDSUISecondaryButton
+  - QDSUIToggleBorderlessButton
+  - QDSUIIcon
+  - QDSUITextSecondaryColor
+  - QDSUIBackplateGradient
+  - Camera
+  - CameraBody
   layers:
   - Default
   - TransparentFX
