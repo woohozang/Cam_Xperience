@@ -18,6 +18,7 @@ TagManager:
   - QDSUIBackplateGradient
   - Camera
   - CameraBody
+  - Hand
   layers:
   - Default
   - TransparentFX
