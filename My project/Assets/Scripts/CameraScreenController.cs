@@ -2,25 +2,32 @@ using UnityEngine;
 
 public class CameraScreenController : MonoBehaviour
 {
-    [Header("LCD Mesh Renderer")]
     public MeshRenderer screenRenderer;
 
-    [Header("기본 텍스처")]
-    public Texture defaultTexture;
+    private Texture currentTexture;
+    private bool isOn = false; // LCD 켜짐 여부
 
-    public void ShowPhoto(Texture photoTex)
+    public void ShowPhoto(Texture tex)
     {
-        if (screenRenderer != null)
-        {
-            screenRenderer.material.mainTexture = photoTex;
-        }
+        screenRenderer.material.mainTexture = tex;
+        currentTexture = tex;
+        isOn = true;
     }
 
-    public void ResetScreen()
+    public void TurnOff(Texture defaultTex)
     {
-        if (screenRenderer != null)
-        {
-            screenRenderer.material.mainTexture = defaultTexture;
-        }
+        screenRenderer.material.mainTexture = defaultTex;
+        currentTexture = null;
+        isOn = false;
+    }
+
+    public Texture GetCurrentTexture()
+    {
+        return currentTexture;
+    }
+
+    public bool IsOn()
+    {
+        return isOn;
     }
 }
