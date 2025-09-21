@@ -16,7 +16,7 @@ public class VRButtonAction_Snapshot : MonoBehaviour
             if (Time.time - lastPressTime < cooldown) return;
             lastPressTime = Time.time;
 
-            // LCD가 꺼져 있으면 무시
+            // LCD 꺼져 있으면 무시
             if (!screenController.IsOn())
             {
                 Debug.Log("LCD Off → 촬영 불가");
@@ -27,12 +27,24 @@ public class VRButtonAction_Snapshot : MonoBehaviour
 
             if (current is RenderTexture rt)
             {
-                Texture2D snapshot = new Texture2D(rt.width, rt.height, TextureFormat.RGB24, false);
+                //  해상도 높이기 (기본 rt 크기보다 더 크게도 가능)
+                int width = rt.width;
+                int height = rt.height;
+
+                Texture2D snapshot = new Texture2D(width, height, TextureFormat.RGB24, false, false);
+
                 RenderTexture.active = rt;
-                snapshot.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+                snapshot.ReadPixels(new Rect(0, 0, width, height), 0, 0);
                 snapshot.Apply();
                 RenderTexture.active = null;
 
+                //  텍스처 선명도 / 번짐 방지 설정
+                snapshot.filterMode = FilterMode.Point;   // 픽셀 그대로
+                snapshot.wrapMode = TextureWrapMode.Clamp;
+
+                RenderTexture.active = null;
+
+                // Quad에 적용
                 worldQuadRenderer.material.mainTexture = snapshot;
             }
             else if (current != null)

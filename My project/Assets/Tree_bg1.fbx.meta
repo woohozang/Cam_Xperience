@@ -1,74 +1,9 @@
 fileFormatVersion: 2
-guid: 6aca73b12cc15864e9597ff75a8ad272
+guid: 62ab4cc2045a60944921f6200366dd77
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Forest Ground
-    second: {fileID: 2100000, guid: 875b253a400190c4eb67cf36924f2999, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: PoleConcrete.001
-    second: {fileID: 2100000, guid: 2927bc2f85be6f0429cd5b7cad56ab5c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: PoleConcrete.002
-    second: {fileID: 2100000, guid: df9532cbb48d43049a1d3a8cd0ad4ba4, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: bark_01
-    second: {fileID: 2100000, guid: dce75208ee9660a4ba49a3f30ac58acd, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: bark_01.001
-    second: {fileID: 2100000, guid: e544c8bcdbce3ef4cb88e89b52a4c61e, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: bark_01.002
-    second: {fileID: 2100000, guid: 8dab8780bb746b74c85eb107e62e0a60, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: bark_01.003
-    second: {fileID: 2100000, guid: 366df93bc5b62d441aceda3082643937, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: leaves_color.002
-    second: {fileID: 2100000, guid: dec25cb3907a6ad4a847e2b1dfbcfc7a, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: leaves_color.003
-    second: {fileID: 2100000, guid: ba64328c88ae06c4db9c4cbc75e2c32a, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: ner2mat
-    second: {fileID: 2100000, guid: 28dbbdbeed625034b86505034abfc1af, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: pine_branches.001
-    second: {fileID: 2100000, guid: dc641080634b16d48b2ea56973ddb10d, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: pine_branches.002
-    second: {fileID: 2100000, guid: fc7d18e6e45f2ac42b53a87d825966e8, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: pine_branches.003
-    second: {fileID: 2100000, guid: 327a34acc4528774eb048f24d98be412, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0

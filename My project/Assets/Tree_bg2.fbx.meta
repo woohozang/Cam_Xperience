@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 6aca73b12cc15864e9597ff75a8ad272
+guid: 059c495ec6cf7a545bff4386d3fe30e9
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -7,68 +7,88 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Forest Ground
-    second: {fileID: 2100000, guid: 875b253a400190c4eb67cf36924f2999, type: 2}
+      name: Forest Ground.001
+    second: {fileID: 2100000, guid: 707595aefde96724d9f8eb0fca2d147c, type: 2}
   - first:
-      type: UnityEngine:Material
+      type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: PoleConcrete.001
-    second: {fileID: 2100000, guid: 2927bc2f85be6f0429cd5b7cad56ab5c, type: 2}
+      name: Brown_Diffuse
+    second: {fileID: 2800000, guid: 0948dec9d5449374995d3afe753cbb16, type: 3}
   - first:
-      type: UnityEngine:Material
+      type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: PoleConcrete.002
-    second: {fileID: 2100000, guid: df9532cbb48d43049a1d3a8cd0ad4ba4, type: 2}
+      name: Brown_Normal
+    second: {fileID: 2800000, guid: 37f16980295e88d4ca039ed1c79b959c, type: 3}
   - first:
-      type: UnityEngine:Material
+      type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: bark_01
-    second: {fileID: 2100000, guid: dce75208ee9660a4ba49a3f30ac58acd, type: 2}
+      name: Brown_Roughness
+    second: {fileID: 2800000, guid: 21d5b16140e60f741bdebb1de0e0b4dc, type: 3}
   - first:
-      type: UnityEngine:Material
+      type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: bark_01.001
-    second: {fileID: 2100000, guid: e544c8bcdbce3ef4cb88e89b52a4c61e, type: 2}
+      name: Brown_Specular
+    second: {fileID: 2800000, guid: 1e2e07ab6ec52a94cae997f75a46e66d, type: 3}
   - first:
-      type: UnityEngine:Material
+      type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: bark_01.002
-    second: {fileID: 2100000, guid: 8dab8780bb746b74c85eb107e62e0a60, type: 2}
+      name: Concrete1
+    second: {fileID: 2800000, guid: fa4a25c5bc1f0ce4da98308de53cd5ea, type: 3}
   - first:
-      type: UnityEngine:Material
+      type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: bark_01.003
-    second: {fileID: 2100000, guid: 366df93bc5b62d441aceda3082643937, type: 2}
+      name: Concrete1_normal
+    second: {fileID: 2800000, guid: 43ef55be652405e45b129f83a9abd9e3, type: 3}
   - first:
-      type: UnityEngine:Material
+      type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: leaves_color.002
-    second: {fileID: 2100000, guid: dec25cb3907a6ad4a847e2b1dfbcfc7a, type: 2}
+      name: ForestGround01_BaseColor
+    second: {fileID: 2800000, guid: 3a206a712070443469cc9bc6e1527557, type: 3}
   - first:
-      type: UnityEngine:Material
+      type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: leaves_color.003
-    second: {fileID: 2100000, guid: ba64328c88ae06c4db9c4cbc75e2c32a, type: 2}
+      name: ForestGround01_Normal
+    second: {fileID: 2800000, guid: dfd8ba96e548e44408e5fb6587feda3a, type: 3}
   - first:
-      type: UnityEngine:Material
+      type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: ner2mat
-    second: {fileID: 2100000, guid: 28dbbdbeed625034b86505034abfc1af, type: 2}
+      name: ForestGround01_Roughness
+    second: {fileID: 2800000, guid: 20a5a9692b3d38d4187c78123145c82b, type: 3}
   - first:
-      type: UnityEngine:Material
+      type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: pine_branches.001
-    second: {fileID: 2100000, guid: dc641080634b16d48b2ea56973ddb10d, type: 2}
+      name: Road
+    second: {fileID: 2800000, guid: 58c502bc989b17947adf1b98b5e7c40b, type: 3}
   - first:
-      type: UnityEngine:Material
+      type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: pine_branches.002
-    second: {fileID: 2100000, guid: fc7d18e6e45f2ac42b53a87d825966e8, type: 2}
+      name: Road_metalic
+    second: {fileID: 2800000, guid: ac5455989356a284988407b320da8455, type: 3}
   - first:
-      type: UnityEngine:Material
+      type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
-      name: pine_branches.003
-    second: {fileID: 2100000, guid: 327a34acc4528774eb048f24d98be412, type: 2}
+      name: Test_background5.fbm
+    second: {fileID: 2800000, guid: faa5dbfe605f1fa429c02007d14ca10f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: leaves_color
+    second: {fileID: 2800000, guid: 8f4ba7fdcc8782e4ba7b12524df5d06c, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: leaves_normal2
+    second: {fileID: 2800000, guid: 58509863f6ff7e345a6dd1b671b8e26e, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: pine_color
+    second: {fileID: 2800000, guid: 010b0b6f04588e44a88ad0ee43b2eee2, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: pine_normal
+    second: {fileID: 2800000, guid: 8939848d5c8504d49ba8e775c806cfe9, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
