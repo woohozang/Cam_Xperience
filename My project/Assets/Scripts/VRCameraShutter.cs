@@ -1,11 +1,15 @@
 using UnityEngine;
+using System.Collections;
 
 public class VRButtonAction_Snapshot : MonoBehaviour
 {
     public CameraScreenController screenController; // DSLR LCD
     public MeshRenderer worldQuadRenderer;          // 월드에 띄울 Quad
+    public MeshRenderer ScreenRenderer; //스크린에 2초동안 띄울
     public Texture defaultWorldTexture;             // 사진 없을 때 기본 이미지
+    public Texture defaultLCDTexture;
     public float cooldown = 0.5f;
+    public float lcdPhotoDuration = 2f;
 
     private float lastPressTime = 0f;
 
@@ -46,15 +50,28 @@ public class VRButtonAction_Snapshot : MonoBehaviour
 
                 // Quad에 적용
                 worldQuadRenderer.material.mainTexture = snapshot;
+                StartCoroutine(ShowPhotoOnLCD(snapshot));
             }
             else if (current != null)
             {
                 worldQuadRenderer.material.mainTexture = current;
+                StartCoroutine(ShowPhotoOnLCD(current));
             }
             else
             {
                 worldQuadRenderer.material.mainTexture = defaultWorldTexture;
             }
         }
+    }
+    private IEnumerator ShowPhotoOnLCD(Texture snapshot)
+    {
+        // 사진 띄움
+        ScreenRenderer.material.mainTexture = snapshot;
+
+        // 2초 유지
+        yield return new WaitForSeconds(lcdPhotoDuration);
+
+        // 기본 이미지로 복귀 (LCD 꺼짐 상태)
+        ScreenRenderer.material.mainTexture = defaultLCDTexture;
     }
 }

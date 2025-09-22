@@ -1878,10 +1878,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3292654313950918604, guid: 25c090698b1b94e4d9a8f6d5494bdf31,
         type: 3}
       insertIndex: 0
-      addedObject: {fileID: 484266996}
-    - targetCorrespondingSourceObject: {fileID: 3292654313950918604, guid: 25c090698b1b94e4d9a8f6d5494bdf31,
-        type: 3}
-      insertIndex: 1
       addedObject: {fileID: 449415494}
     - targetCorrespondingSourceObject: {fileID: 3292654313950918604, guid: 25c090698b1b94e4d9a8f6d5494bdf31,
         type: 3}
@@ -2015,11 +2011,11 @@ Transform:
   m_GameObject: {fileID: 484266991}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.48119444, z: -0, w: 0.8766139}
-  m_LocalPosition: {x: -2.385, y: -0.023000002, z: 1.4840001}
-  m_LocalScale: {x: 1.92, y: 1.08, z: 1}
+  m_LocalPosition: {x: -2.2930999, y: 1.252, z: 1.747}
+  m_LocalScale: {x: 1.9200001, y: 1.08, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 563026439}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -57.527, z: 0}
 --- !u!1 &490618253
 GameObject:
@@ -8026,8 +8022,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   screenController: {fileID: 2096889123}
   worldQuadRenderer: {fileID: 484266994}
+  ScreenRenderer: {fileID: 1237645088}
   defaultWorldTexture: {fileID: 2800000, guid: f67ce5ba31842bb418bdb34c6481fc37, type: 3}
+  defaultLCDTexture: {fileID: 8400000, guid: 23fb42ae9a2bada45a16cda4f44ce241, type: 2}
   cooldown: 0.5
+  lcdPhotoDuration: 2
 --- !u!65 &1853114549
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -11454,4 +11453,5 @@ SceneRoots:
   - {fileID: 2096889122}
   - {fileID: 2015129955}
   - {fileID: 667322318}
+  - {fileID: 484266996}
   - {fileID: 1448022650}
