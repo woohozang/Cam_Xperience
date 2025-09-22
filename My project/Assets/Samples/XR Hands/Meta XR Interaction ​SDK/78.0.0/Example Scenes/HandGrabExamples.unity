@@ -2886,6 +2886,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   snapPoint: {fileID: 1996201291}
+  currentCamera: {fileID: 0}
+  isSnapped: 0
 --- !u!1 &760075429
 GameObject:
   m_ObjectHideFlags: 0
