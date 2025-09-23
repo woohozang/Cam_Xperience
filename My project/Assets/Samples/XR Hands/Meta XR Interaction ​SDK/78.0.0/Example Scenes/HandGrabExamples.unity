@@ -2882,12 +2882,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 758369450}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e17c61d5eb960cc459661ce959f4313e, type: 3}
+  m_Script: {fileID: 11500000, guid: d4417889f134868448652006e9853793, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   snapPoint: {fileID: 1996201291}
-  currentCamera: {fileID: 0}
-  isSnapped: 0
 --- !u!1 &760075429
 GameObject:
   m_ObjectHideFlags: 0
