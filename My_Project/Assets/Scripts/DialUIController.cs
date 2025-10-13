@@ -1,63 +1,59 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 public class DialUIController : MonoBehaviour
 {
-    [Header("UI References")]
-    public GameObject worldUI;        // World UI Canvas
-    public Slider progressSlider;     // 슬라이더
-    public TextMeshProUGUI valueText; // 값 표시 텍스트
+    [Header("UI")]
+    public Canvas worldCanvas;
+    public Slider focusSlider;
 
-    [Header("Post Processing")]
-    public Volume globalVolume;       // Global Volume (씬에 있는거 드래그)
-    private DepthOfField dof;         // Depth of Field 컴포넌트
+    [Header("PostProcess")]
+    public Volume globalVolume;
+    private DepthOfField dof;
 
-    private bool isVisible = false;
-
-    void Start()
+    void Awake()
     {
-        if (worldUI != null)
-            worldUI.SetActive(false);
+        if (globalVolume.profile.TryGet(out dof) == false)
+            Debug.LogError("Depth Of Field override가 Global Volume에 필요합니다.");
 
-        // Global Volume에서 DoF 가져오기
-        if (globalVolume != null)
-        {
-            if (globalVolume.profile.TryGet(out DepthOfField depthOfField))
-            {
-                dof = depthOfField;
-            }
-            else
-            {
-                Debug.LogWarning("Global Volume에 DepthOfField Override가 없습니다!");
-            }
-        }
+        if (focusSlider != null)
+            focusSlider.onValueChanged.AddListener(OnSliderChanged);
 
-        // 슬라이더 이벤트 연결
-        if (progressSlider != null)
-            progressSlider.onValueChanged.AddListener(OnSliderChanged);
+        // 시작 시 숨기기
+        worldCanvas.gameObject.SetActive(false);
     }
 
-    //  버튼으로 UI 토글
-    public void ToggleUI()
+    public void Toggle()
     {
-        isVisible = !isVisible;
-        if (worldUI != null)
-            worldUI.SetActive(isVisible);
+        bool isActive = !worldCanvas.gameObject.activeSelf;
+        worldCanvas.gameObject.SetActive(isActive);
+        Debug.Log($"[DialUIController] World UI {(isActive ? "ON" : "OFF")}");
     }
 
-    //  슬라이더 값 변경 시 실행
-    public void OnSliderChanged(float value)
+    /*private void OnSliderChanged(float value)
     {
-        if (valueText != null)
-            valueText.text = $"Aperture: {value:F2}";
+        if (dof == null) return;
 
-        if (dof != null)
-        {
-            // 슬라이더 값 → DoF Aperture (f-stop 값)
-            dof.aperture.Override(value);
-        }
+        dof.mode.value = DepthOfFieldMode.Bokeh;
+        dof.focusDistance.value = Mathf.Lerp(0.2f, 10f, value);
+        dof.aperture.value = Mathf.Lerp(16f, 1.4f, value);
+    }*/
+
+    private void OnSliderChanged(float value)
+    {
+        if (dof == null) return;
+
+        dof.mode.value = DepthOfFieldMode.Bokeh;
+
+        // 슬라이더 방향 반전 (value=1 일 때 가까운 물체에 초점)
+        float reversed = 1f - value;
+
+        // 초점 거리 / 조리개 매핑 조정
+        dof.focusDistance.value = Mathf.Lerp(0.3f, 8f, reversed);  // 가까운~먼 거리
+        dof.aperture.value = Mathf.Lerp(16f, 1.4f, reversed);      // 조리개 값 (깊은 DOF얕은 DOF)
+        dof.focusDistance.value = Mathf.Lerp(dof.focusDistance.value, Mathf.Lerp(0.3f, 8f, reversed), Time.deltaTime * 5f);
+
     }
 }
