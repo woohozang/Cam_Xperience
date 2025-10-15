@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -12,17 +12,30 @@ public class DialUIController : MonoBehaviour
     [Header("PostProcess")]
     public Volume globalVolume;
     private DepthOfField dof;
+    private ColorAdjustments color;
+
+    [Header("Exposure Settings")]
+    public float baselineAperture = 2.8f; // ê¸°ì¤€ ì¡°ë¦¬ê°œê°’
+    public float exposureMultiplier = 1.0f; // ë°ê¸° ë¯¼ê°ë„ ì¡°ì •ìš©
+
 
     void Awake()
     {
-        if (globalVolume.profile.TryGet(out dof) == false)
-            Debug.LogError("Depth Of Field override°¡ Global Volume¿¡ ÇÊ¿äÇÕ´Ï´Ù.");
+        // Depth of Field ê°€ì ¸ì˜¤ê¸°
+        if (!globalVolume.profile.TryGet(out dof))
+            Debug.LogError(" Global Volumeì— Depth Of Field Overrideê°€ í•„ìš”í•©ë‹ˆë‹¤.");
 
+        // Color Adjustments ê°€ì ¸ì˜¤ê¸°
+        if (!globalVolume.profile.TryGet(out color))
+            Debug.LogError(" Global Volumeì— Color Adjustments Overrideê°€ í•„ìš”í•©ë‹ˆë‹¤. (Post Exposure í¬í•¨)");
+
+        // ìŠ¬ë¼ì´ë” ì´ë²¤íŠ¸ ì—°ê²°
         if (focusSlider != null)
             focusSlider.onValueChanged.AddListener(OnSliderChanged);
 
-        // ½ÃÀÛ ½Ã ¼û±â±â
-        worldCanvas.gameObject.SetActive(false);
+        // ì‹œì‘ ì‹œ UI ë¹„í™œì„±í™”
+        if (worldCanvas != null)
+            worldCanvas.gameObject.SetActive(false);
     }
 
     public void Toggle()
@@ -32,14 +45,7 @@ public class DialUIController : MonoBehaviour
         Debug.Log($"[DialUIController] World UI {(isActive ? "ON" : "OFF")}");
     }
 
-    /*private void OnSliderChanged(float value)
-    {
-        if (dof == null) return;
 
-        dof.mode.value = DepthOfFieldMode.Bokeh;
-        dof.focusDistance.value = Mathf.Lerp(0.2f, 10f, value);
-        dof.aperture.value = Mathf.Lerp(16f, 1.4f, value);
-    }*/
 
     private void OnSliderChanged(float value)
     {
@@ -47,13 +53,23 @@ public class DialUIController : MonoBehaviour
 
         dof.mode.value = DepthOfFieldMode.Bokeh;
 
-        // ½½¶óÀÌ´õ ¹æÇâ ¹İÀü (value=1 ÀÏ ¶§ °¡±î¿î ¹°Ã¼¿¡ ÃÊÁ¡)
+        // ìŠ¬ë¼ì´ë” ë°©í–¥ ë°˜ì „ (value=1 â†’ ê°€ê¹Œìš´ ë¬¼ì²´)
         float reversed = 1f - value;
 
-        // ÃÊÁ¡ °Å¸® / Á¶¸®°³ ¸ÅÇÎ Á¶Á¤
-        dof.focusDistance.value = Mathf.Lerp(0.3f, 8f, reversed);  // °¡±î¿î~¸Õ °Å¸®
-        dof.aperture.value = Mathf.Lerp(16f, 1.4f, reversed);      // Á¶¸®°³ °ª (±íÀº DOF¾èÀº DOF)
-        dof.focusDistance.value = Mathf.Lerp(dof.focusDistance.value, Mathf.Lerp(0.3f, 8f, reversed), Time.deltaTime * 5f);
+        // === DoF ì¡°ì ˆ ===
+        dof.focusDistance.value = Mathf.Lerp(0.3f, 8f, reversed); // ê°€ê¹Œì›€~ë©€ë¦¬
+        dof.aperture.value = Mathf.Lerp(16f, 1.4f, reversed);     // ê¹Šì€ DOF~ì–•ì€ DOF
 
+        // === Exposure ì¡°ì ˆ ===
+        if (color != null)
+        {
+            float apertureValue = dof.aperture.value;
+
+            // f/1.4~f/16 â†’ EV 2.1~âˆ’5.0 ì„ í˜• ë§¤í•‘
+            float t = Mathf.InverseLerp(1.4f, 16f, apertureValue);
+            float exposureEV = Mathf.Lerp(2.1f, -5.0f, t);
+
+            color.postExposure.value = exposureEV;
+        }
     }
 }
