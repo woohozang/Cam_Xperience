@@ -42,7 +42,7 @@ public class CameraSnapZone : MonoBehaviour
         rb.transform.SetPositionAndRotation(snapPoint.position, snapPoint.rotation);
 
         // 물리 고정 (중력 X, 움직이지 않음)
-        rb.isKinematic = true;
+        //rb.isKinematic = true;
 
         isSnapped = true;
     }
