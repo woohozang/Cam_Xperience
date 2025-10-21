@@ -35,7 +35,7 @@ public class VRButtonAction_Snapshot : MonoBehaviour
                 int width = rt.width;
                 int height = rt.height;
 
-                Texture2D snapshot = new Texture2D(width, height, TextureFormat.RGB24, false, false);
+                Texture2D snapshot = new Texture2D(width, height, TextureFormat.RGBA32, false, true);
 
                 RenderTexture.active = rt;
                 snapshot.ReadPixels(new Rect(0, 0, width, height), 0, 0);
