@@ -2,6 +2,8 @@
 using UnityEngine.UI;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using OVR;
+using System.Collections;
 
 public class DialUIController : MonoBehaviour
 {
@@ -18,6 +20,14 @@ public class DialUIController : MonoBehaviour
     public float baselineAperture = 2.8f; // 기준 조리개값
     public float exposureMultiplier = 1.0f; // 밝기 민감도 조정용
 
+    [Header("MoveHaptic")]
+    public float hapticSensitivity = 1.5f; // [추가] 속도 대비 햅틱 민감도
+    public float hapticDuration = 0.05f; // [추가] 햅틱 1회당 지속시간 (짧게)
+
+    private float lastSliderValue; // [추가] 이전 프레임의 슬라이더 값
+    private Coroutine hapticCoroutine; // [추가] 햅틱 코루틴 제어용
+
+
 
     void Awake()
     {
@@ -31,8 +41,10 @@ public class DialUIController : MonoBehaviour
 
         // 슬라이더 이벤트 연결
         if (focusSlider != null)
+        {
             focusSlider.onValueChanged.AddListener(OnSliderChanged);
-
+            lastSliderValue = focusSlider.value;
+        }
         // 시작 시 UI 비활성화
         if (worldCanvas != null)
             worldCanvas.gameObject.SetActive(false);
@@ -52,7 +64,7 @@ public class DialUIController : MonoBehaviour
         if (dof == null) return;
 
         dof.mode.value = DepthOfFieldMode.Bokeh;
-
+        //OVRInput.SetControllerVibration(1, Amplitude, OVRInput.Controller.RTouch);
         // 슬라이더 방향 반전 (value=1 → 가까운 물체)
         float reversed = 1f - value;
 
@@ -71,5 +83,34 @@ public class DialUIController : MonoBehaviour
 
             color.postExposure.value = exposureEV;
         }
+
+        // 햅틱 조절
+        float speed = 0f;
+        if (Time.deltaTime > 0)
+        {
+            speed = Mathf.Abs(value - lastSliderValue) / Time.deltaTime;
+        }
+        float dynamicAmplitude = Mathf.Clamp01(speed * hapticSensitivity);
+
+        if (hapticCoroutine != null)
+        {
+            StopCoroutine(hapticCoroutine);
+        }
+        hapticCoroutine = StartCoroutine(VibrateForDuration(hapticDuration, dynamicAmplitude));
+
+        lastSliderValue = value;
+    }
+    
+    private IEnumerator VibrateForDuration(float duration, float amplitude)
+    {
+        // 햅틱 시작 (오른쪽 컨트롤러)
+        OVRInput.SetControllerVibration(1, amplitude, OVRInput.Controller.RTouch);
+
+        // 지정된 시간(duration)만큼 대기
+        yield return new WaitForSeconds(duration);
+
+        // 햅틱 중지
+        OVRInput.SetControllerVibration(0, 0, OVRInput.Controller.RTouch);
+        hapticCoroutine = null;
     }
 }
