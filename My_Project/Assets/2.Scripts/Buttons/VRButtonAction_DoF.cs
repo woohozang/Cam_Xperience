@@ -8,7 +8,7 @@ public class VRButtonAction_DoF : MonoBehaviour
     public GameObject dofCanvas; // 직접 GameObject로 참조 (활성화/비활성화 제어)
 
     [Header("Settings")]
-    public float cooldown = 0.3f;
+    public float cooldown = 1.0f;
 
     private float lastPressTime = 0f;
 
