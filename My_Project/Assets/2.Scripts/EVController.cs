@@ -4,25 +4,22 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal; // URP 네임스페이스
 using OVR;
 using System.Collections;
-using TMPro;
+using TMPro; // TextMeshPro 네임스페이스
 
-public class UIController : MonoBehaviour
+public class EVController : MonoBehaviour
 {
     [Header("UI")]
     public Canvas worldCanvas;
     [Space]
-    //public Slider focusSlider;
+    //public Slider focusSlider; // [주석 처리됨]
     public Slider apertureSlider;
     public Slider shutterSlider;
     public Slider isoSlider;
     [Space]
     [Header("UI Text Display")]
-    [Tooltip("예: F1.8")]
-    public TMP_Text apertureText; // [추가]
-    [Tooltip("예: 1/4000")]
-    public TMP_Text shutterText; // [추가]
-    [Tooltip("예: 12800")]
-    public TMP_Text isoText; // [추가]
+    public TMP_Text apertureText;
+    public TMP_Text shutterText;
+    public TMP_Text isoText;
 
     [Header("Target Components")]
     [Tooltip("DoF, Motion Blur, Color Adjustments, Film Grain이 포함된 Volume")]
@@ -32,48 +29,49 @@ public class UIController : MonoBehaviour
     private DepthOfField dof;
     private MotionBlur mb;
     private ColorAdjustments color;
-    private FilmGrain filmGrain; // ISO 노이즈 효과를 위해 추가
+    private FilmGrain filmGrain;
 
     [Header("Slider Ranges")]
-    public float minFocus = 0.3f;  // 최소 초점 거리 (m)
-    public float maxFocus = 10f; // 최대 초점 거리 (m)
+    // ... [focusSlider 관련 주석 처리] ...
+    // public float minFocus = 0.3f;
+    // public float maxFocus = 10f;
     [Space]
-    public float minAperture = 16f;  // 최소 조리개 (f/16 - 슬라이더 값 0)
-    public float maxAperture = 1.4f; // 최대 조리개 (f/1.4 - 슬라이더 값 1)
+    public float minAperture = 16f;  // f/16 (슬라이더 값 0)
+    public float maxAperture = 1.4f; // f/1.4 (슬라이더 값 1)
     [Space]
     [Tooltip("셔터 스피드 분모 값 (예: 4000 = 1/4000초)")]
-    public float minShutterDenominator = 4000f; // 최대 속도 (슬라이더 값 0)
+    public float minShutterDenominator = 4000f; // (슬라이더 값 0)
     [Tooltip("셔터 스피드 분모 값 (예: 1 = 1초)")]
-    public float maxShutterDenominator = 1f;    // 최소 속도 (슬라이더 값 1)
+    public float maxShutterDenominator = 1f;    // (슬라이더 값 1)
     [Space]
-    public int minIso = 100; // 슬라이더 값 0
-    public int maxIso = 6400; // 슬라이더 값 1
+    public int minIso = 100; // (슬라이더 값 0)
+    public int maxIso = 12800; // [값 수정] (슬라이더 값 1)
 
-    [Header("Manual Exposure Settings (EV Stops)")]
-    [Tooltip("Aperture(f/16 -> f/1.4)가 밝기에 기여하는 EV 범위")]
-    public Vector2 apertureEvRange = new Vector2(-5.0f, 2.1f);
-    [Tooltip("Shutter(1/4000s -> 1s)가 밝기에 기여하는 EV 범위")]
-    public Vector2 shutterEvRange = new Vector2(-4.0f, 4.0f);
-    [Tooltip("ISO(100 -> 6400)가 밝기에 기여하는 EV 범위 (ISO 100이 0 EV 기준)")]
-    public Vector2 isoEvRange = new Vector2(0.0f, 6.0f); // 100 -> 6400 = 6 스탑
+    // [삭제] Manual Exposure Settings (EV Stops) 헤더 및 변수들 삭제
 
     [Header("Effect Intensities")]
     [Tooltip("모션 블러의 최대 강도 (셔터가 가장 느릴 때)")]
     public float maxBlurIntensity = 1.0f;
     [Tooltip("ISO가 최대일 때 필름 그레인(노이즈)의 최대 강도")]
-    public float maxGrainIntensity = 0.5f; // 노이즈 강도 설정
+    public float maxGrainIntensity = 0.5f;
+
+    [Header("EV Calibration")]
+    [Tooltip("이 씬의 '적정 노출' 기준값 (EV). 이 값에서 PostExposure가 0이 됩니다.")]
+    public float sceneBaselineEV = 13f; // [추가] (예: 맑은 날 f/16, 1/125s, ISO 100)
 
     [Header("MoveHaptic")]
+    // ... (기존 햅틱 변수들) ...
     public float hapticSensitivity = 1.5f;
     public float hapticDuration = 0.05f;
 
-    // 각 슬라이더의 이전 값을 저장
-    //private float lastFocusValue;
+    // ... (기존 private 변수들) ...
     private float lastApertureValue;
     private float lastShutterValue;
     private float lastIsoValue;
-
     private Coroutine hapticCoroutine;
+
+    // [추가] 로그(log) 계산을 위한 상수 (성능 최적화)
+    private static readonly float LOG_BASE_2 = Mathf.Log(2);
 
     void Awake()
     {
@@ -90,13 +88,10 @@ public class UIController : MonoBehaviour
         if (!globalVolume.profile.TryGet(out color))
             Debug.LogError("Global Volume에 Color Adjustments Override가 필요합니다.");
 
-        // FilmGrain 컴포넌트 가져오기 (없으면 경고)
         if (!globalVolume.profile.TryGet(out filmGrain))
             Debug.LogWarning("Global Volume에 Film Grain Override가 없습니다. ISO 노이즈 효과가 적용되지 않습니다.");
 
-
         // --- 슬라이더 이벤트 연결 및 초기값 설정 ---
-        //InitializeSlider(focusSlider, OnFocusSliderChanged, ref lastFocusValue);
         InitializeSlider(apertureSlider, OnApertureSliderChanged, ref lastApertureValue);
         InitializeSlider(shutterSlider, OnShutterSliderChanged, ref lastShutterValue);
         InitializeSlider(isoSlider, OnIsoSliderChanged, ref lastIsoValue);
@@ -109,7 +104,8 @@ public class UIController : MonoBehaviour
             worldCanvas.gameObject.SetActive(false);
     }
 
-    // 슬라이더 초기화 헬퍼 함수
+    // ... (InitializeSlider, Toggle, 슬라이더 OnChanged 함수들 기존과 동일) ...
+
     private void InitializeSlider(Slider slider, UnityEngine.Events.UnityAction<float> listener, ref float lastValueTracker)
     {
         if (slider != null)
@@ -126,81 +122,61 @@ public class UIController : MonoBehaviour
         Debug.Log($"[DialUIController] World UI {(isActive ? "ON" : "OFF")}");
     }
 
-    // --- 1. 초점 슬라이더 로직 ---
-    /*private void OnFocusSliderChanged(float value)
-    {
-        if (dof != null)
-        {
-            // 초점 거리는 여기서 바로 제어하거나 UpdateCameraEffects로 옮길 수 있습니다.
-            dof.focusDistance.value = Mathf.Lerp(minFocus, maxFocus, value);
-        }
-        TriggerHaptic(CalculateSpeed(value, ref lastFocusValue));
-        lastFocusValue = value;
-    }*/
-
-    // --- 2. 조리개 슬라이더 로직 ---
     private void OnApertureSliderChanged(float value)
     {
-        UpdateCameraEffects(); // 모든 효과 업데이트
+        UpdateCameraEffects();
         TriggerHaptic(CalculateSpeed(value, ref lastApertureValue));
         lastApertureValue = value;
     }
 
-    // --- 3. 셔터 스피드 슬라이더 로직 ---
     private void OnShutterSliderChanged(float value)
     {
-        UpdateCameraEffects(); // 모든 효과 업데이트
+        UpdateCameraEffects();
         TriggerHaptic(CalculateSpeed(value, ref lastShutterValue));
         lastShutterValue = value;
     }
 
-    // --- 4. ISO 슬라이더 로직 ---
     private void OnIsoSliderChanged(float value)
     {
-        UpdateCameraEffects(); // 모든 효과 업데이트
+        UpdateCameraEffects();
         TriggerHaptic(CalculateSpeed(value, ref lastIsoValue));
         lastIsoValue = value;
     }
 
+
     /// <summary>
-    /// [핵심] 3개의 슬라이더 값을 읽어 모든 카메라 시각 효과 (심도, 모션블러, 노이즈, 밝기)를 계산하고 적용합니다.
+    /// [핵심 수정] 3개의 슬라이더 값을 '실제 물리 공식'으로 계산하여 모든 효과를 업데이트합니다.
     /// </summary>
     private void UpdateCameraEffects()
     {
-        // 각 슬라이더의 현재 값(0.0 ~ 1.0)을 가져옵니다.
         float apertureT = (apertureSlider != null) ? apertureSlider.value : 0.5f;
         float shutterT = (shutterSlider != null) ? shutterSlider.value : 0.5f;
         float isoT = (isoSlider != null) ? isoSlider.value : 0.5f;
 
-        // --- 1. 조리개 (Aperture) -> 심도 (Depth of Field) ---
+        // --- 1. 조리개 (Aperture) 계산 및 적용 ---
+        // (f/16 (0) -> f/1.4 (1))
         float currentAperture = Mathf.Lerp(minAperture, maxAperture, apertureT);
         if (dof != null)
         {
-            // DoF 파라미터 제어 (f/16 (0) -> f/1.4 (1))
-            // 슬라이더 값이 1에 가까울수록 maxAperture(f/1.4)가 되어야 합니다.
-            dof.aperture.value = Mathf.Lerp(minAperture, maxAperture, apertureT);
+            dof.aperture.value = currentAperture;
         }
         if (apertureText != null)
         {
-            // [추가] 텍스트 업데이트 (예: "F1.8", "F16.0")
             apertureText.text = $"F{currentAperture:F1}";
         }
 
-        // --- 2. 셔터 속도 (Shutter Speed) -> 모션 블러 (Motion Blur) ---
+        // --- 2. 셔터 속도 (Shutter Speed) 계산 및 적용 ---
+        // (1/4000s (0) -> 1s (1))
+        float logMinShutter = Mathf.Log10(minShutterDenominator);
+        float logMaxShutter = Mathf.Log10(maxShutterDenominator);
+        float currentShutterDenom = Mathf.Pow(10, Mathf.Lerp(logMinShutter, logMaxShutter, shutterT));
+
         if (mb != null)
         {
-            // Motion Blur 파라미터 제어 (0=빠름=블러 없음, 1=느림=블러 최대)
             mb.intensity.value = Mathf.Lerp(0, maxBlurIntensity, shutterT);
         }
         if (shutterText != null)
         {
-            // [추가] 로그 스케일로 실제 셔터 분모 값 계산 (표시용)
-            float logMinShutter = Mathf.Log10(minShutterDenominator);
-            float logMaxShutter = Mathf.Log10(maxShutterDenominator);
-            float logShutter = Mathf.Lerp(logMinShutter, logMaxShutter, shutterT);
-            float currentShutterDenom = Mathf.Pow(10, logShutter);
-
-            // [추가] 포맷팅: 1초 이하면 "1.0s", 1초 초과면 "1/XXXX"
             if (currentShutterDenom <= 1f)
             {
                 shutterText.text = $"{currentShutterDenom:F1}s";
@@ -210,43 +186,55 @@ public class UIController : MonoBehaviour
                 shutterText.text = $"1/{Mathf.RoundToInt(currentShutterDenom)}";
             }
         }
-        // --- 3. ISO -> 노이즈 (Film Grain) ---
+
+        // --- 3. ISO 계산 및 적용 ---
+        // (100 (0) -> 12800 (1))
+        float logMinIso = Mathf.Log10(minIso);
+        float logMaxIso = Mathf.Log10(maxIso);
+        float currentIso = Mathf.Pow(10, Mathf.Lerp(logMinIso, logMaxIso, isoT));
+
         if (filmGrain != null)
         {
-            // Film Grain 파라미터 제어 (0=ISO 100=노이즈 없음, 1=ISO 6400=노이즈 최대)
             filmGrain.intensity.value = Mathf.Lerp(0, maxGrainIntensity, isoT);
         }
         if (isoText != null)
         {
-            // [추가] 로그 스케일로 실제 ISO 값 계산 (표시용)
-            float logMinIso = Mathf.Log10(minIso);
-            float logMaxIso = Mathf.Log10(maxIso);
-            float logIso = Mathf.Lerp(logMinIso, logMaxIso, isoT);
-            int currentIso = Mathf.RoundToInt(Mathf.Pow(10, logIso));
-
-            // [추가] 텍스트 업데이트
-            isoText.text = $"{currentIso}";
+            isoText.text = $"{Mathf.RoundToInt(currentIso)}";
         }
-        // --- 4. 모든 요소 -> 노출 (Exposure) ---
+
+        // --- 4. [수정됨] 실제 공식으로 노출(Exposure) 계산 ---
         if (color != null)
         {
-            // 각 슬라이더의 EV 기여도를 계산합니다.
-            // Aperture: 0(f/16, 어두움) -> 1(f/1.4, 밝음)
-            float apertureEV = Mathf.Lerp(apertureEvRange.x, apertureEvRange.y, apertureT);
+            // 실제 셔터 속도 (초 단위)
+            float t = 1.0f / currentShutterDenom;
+            // 실제 조리개 값 (f-number)
+            float N = currentAperture;
+            // 실제 ISO 값
+            float ISO = currentIso;
 
-            // Shutter: 0(1/4000s, 어두움) -> 1(1s, 밝음)
-            float shutterEV = Mathf.Lerp(shutterEvRange.x, shutterEvRange.y, shutterT);
+            // EV100 (ISO 100 기준 EV) 계산: EV = log₂(N² / t)
+            float EV100 = Log2((N * N) / t);
 
-            // ISO: 0(100, 어두움) -> 1(6400, 밝음)
-            float isoEV = Mathf.Lerp(isoEvRange.x, isoEvRange.y, isoT);
+            // ISO를 반영한 최종 EV 계산: EV_final = EV100 + log₂(ISO / 100)
+            float totalEV = EV100 + Log2(ISO / 100.0f);
 
-            // 3개의 EV 값을 모두 합산하여 Post Exposure에 적용
-            color.postExposure.value = apertureEV + shutterEV + isoEV;
+            // 씬의 기준 EV(13)를 빼서 Post Exposure 값을 보정
+            // (예: 씬 기준 13EV에서 0 EV(변화 없음)가 되도록 함)
+            color.postExposure.value = totalEV - sceneBaselineEV;
         }
     }
 
+    /// <summary>
+    /// Mathf.Log(f, 2) (Log base 2)를 계산하는 헬퍼 함수
+    /// </summary>
+    private float Log2(float value)
+    {
+        return Mathf.Log(value) / LOG_BASE_2;
+    }
 
-    // --- 햅틱 로직 (모든 슬라이더가 공유) ---
+
+    // --- 햅틱 로직 (기존과 동일) ---
+    // ... (CalculateSpeed, TriggerHaptic, VibrateForDuration 함수들) ...
     private float CalculateSpeed(float newValue, ref float lastValue)
     {
         if (Time.deltaTime > 0)
