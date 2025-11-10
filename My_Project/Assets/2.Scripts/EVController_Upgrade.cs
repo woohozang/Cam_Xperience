@@ -1,10 +1,10 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal; // URP »ç¿ë ½Ã
+using UnityEngine.Rendering.Universal; // URP ì‚¬ìš© ì‹œ
 using OVR; // Oculus Integration
 using System.Collections;
-using TMPro; // TextMeshPro ³×ÀÓ½ºÆäÀÌ½º
+using TMPro; // TextMeshPro ë„¤ì„ìŠ¤í˜ì´ìŠ¤
 
 public class EVController_Upgrade : MonoBehaviour
 {
@@ -19,47 +19,55 @@ public class EVController_Upgrade : MonoBehaviour
     public TMP_Text apertureText;
     public TMP_Text shutterText;
     public TMP_Text isoText;
-    public TMP_Text evText; // EV °ªÀ» Ç¥½ÃÇÒ TextMeshPro UI ¿ä¼Ò
+    //public TMP_Text evText; // EV ê°’ì„ í‘œì‹œí•  TextMeshPro UI ìš”ì†Œ
 
     [Header("Target Components")]
-    [Tooltip("DoF, Motion Blur, Color Adjustments, Film GrainÀÌ Æ÷ÇÔµÈ Volume")]
+    [Tooltip("DoF, Motion Blur, Color Adjustments, Film Grainì´ í¬í•¨ëœ Volume")]
     public Volume globalVolume;
 
-    // Ä³½ÃµÈ Æ÷½ºÆ® ÇÁ·Î¼¼½Ì ¿À¹ö¶óÀÌµå
+    // ìºì‹œëœ í¬ìŠ¤íŠ¸ í”„ë¡œì„¸ì‹± ì˜¤ë²„ë¼ì´ë“œ
     private DepthOfField dof;
     private MotionBlur mb;
     private ColorAdjustments color;
     private FilmGrain filmGrain;
 
-    // --- [¼öÁ¤µÊ] Discrete °ª ¹è¿­ ---
+    // --- [ìˆ˜ì •ë¨] Discrete ê°’ ë°°ì—´ ---
     [Header("Camera Setting Steps")]
-    [Tooltip("Á¶¸®°³ f-stop °ª (8´Ü°è)")]
-    public float[] apertureValues = { 1.4f, 2.0f, 2.8f, 4.0f, 5.6f, 8.0f, 11f, 16f };
+    [Tooltip("ì¡°ë¦¬ê°œ f-stop ê°’ (10ë‹¨ê³„)")]
+    public float[] apertureValues = { 1.2f, 1.8f, 2.8f, 3.5f, 5.2f, 6.2f, 7.8f, 9.5f, 11f, 13f, 16f };
 
-    [Tooltip("¼ÅÅÍ ¼Óµµ(ÃÊ ´ÜÀ§) (8´Ü°è)")]
-    public float[] shutterSpeedValues = { 1 / 15f, 1 / 30f, 1 / 60f, 1 / 125f, 1 / 250f, 1 / 500f, 1 / 1000f, 1 / 2000f };
+    [Tooltip("ì…”í„° ì†ë„(ì´ˆ ë‹¨ìœ„) (25ë‹¨ê³„)")]
+    public float[] shutterSpeedValues = {
+        20f, 15f, 10f, 8f, 5f, 4f, 3f, 2.5f, 2f, 1.6f, 1.3f, 1f,
+        0.8f, 0.5f, 1f/4f, 1f/10f, 1f/25f, 1f/50f, 1f/100f, 1f/200f,
+        1f/400f, 1f/800f, 1f/1000f, 1f/2000f, 1f/4000f
+    };
 
-    [Tooltip("¼ÅÅÍ ¼Óµµ Ç¥½Ã¿ë ·¹ÀÌºí (8´Ü°è)")]
-    public string[] shutterSpeedLabels = { "1/15", "1/30", "1/60", "1/125", "1/250", "1/500", "1/1000", "1/2000" };
+    [Tooltip("ì…”í„° ì†ë„ í‘œì‹œìš© ë ˆì´ë¸” (25ë‹¨ê³„)")]
+    public string[] shutterSpeedLabels = {
+        "20\"", "15\"", "10\"", "8\"", "5\"", "4\"", "3\"", "2.5\"", "2\"", "1.6\"", "1.3\"", "1\"",
+        "0.8\"", "0.5\"", "1/4", "1/10", "1/25", "1/50", "1/100", "1/200",
+        "1/400", "1/800", "1/1000", "1/2000", "1/4000"
+    };
 
-    [Tooltip("ISO °ª (7´Ü°è)")]
-    public int[] isoValues = { 100, 200, 400, 800, 1600, 3200, 6400 };
+    [Tooltip("ISO ê°’ (7ë‹¨ê³„)")]
+    public int[] isoValues = { 50, 100, 200, 400, 800, 1500, 3000, 5000, 8000 };
 
-    // [±âÁ¸ º¯¼ö »èÁ¦µÊ]
-    // minAperture, maxAperture, minShutterDenominator, maxShutterDenominator, minIso, maxIso »èÁ¦
+    // [ê¸°ì¡´ ë³€ìˆ˜ ì‚­ì œë¨]
+    // minAperture, maxAperture, minShutterDenominator, maxShutterDenominator, minIso, maxIso ì‚­ì œ
 
     [Header("Effect Intensities")]
-    [Tooltip("¸ğ¼Ç ºí·¯ÀÇ ÃÖ´ë °­µµ (¼ÅÅÍ°¡ °¡Àå ´À¸± ¶§)")]
-    public float maxBlurIntensity = 0.8f; // °ª ¾à°£ Á¶Á¤
-    [Tooltip("ISO°¡ ÃÖ´ëÀÏ ¶§ ÇÊ¸§ ±×·¹ÀÎ(³ëÀÌÁî)ÀÇ ÃÖ´ë °­µµ")]
+    [Tooltip("ëª¨ì…˜ ë¸”ëŸ¬ì˜ ìµœëŒ€ ê°•ë„ (ì…”í„°ê°€ ê°€ì¥ ëŠë¦´ ë•Œ)")]
+    public float maxBlurIntensity = 0.8f; // ê°’ ì•½ê°„ ì¡°ì •
+    [Tooltip("ISOê°€ ìµœëŒ€ì¼ ë•Œ í•„ë¦„ ê·¸ë ˆì¸(ë…¸ì´ì¦ˆ)ì˜ ìµœëŒ€ ê°•ë„")]
     public float maxGrainIntensity = 0.5f;
 
     [Header("EV Calibration")]
-    [Tooltip("ÀÌ ¾ÀÀÇ 'ÀûÁ¤ ³ëÃâ' ±âÁØ°ª (EV). ÀÌ °ª¿¡¼­ PostExposure°¡ 0ÀÌ µË´Ï´Ù.")]
-    public float sceneBaselineEV = 13f; // ¿¹: ¸¼Àº ³¯ EV 15 (Sunny 16 rule)
+    [Tooltip("ì´ ì”¬ì˜ 'ì ì • ë…¸ì¶œ' ê¸°ì¤€ê°’ (EV). ì´ ê°’ì—ì„œ PostExposureê°€ 0ì´ ë©ë‹ˆë‹¤.")]
+    public float sceneBaselineEV = 10.6f; // ì˜ˆ: ë§‘ì€ ë‚  EV 15 (Sunny 16 rule)
 
     [Header("MoveHaptic")]
-    public float hapticSensitivity = 1.5f; // ÀÌ °ªÀº ÀÌÁ¦ »ç¿ëµÇÁö ¾ÊÁö¸¸, TriggerHaptic¿¡¼­ °íÁ¤µÈ °­µµ·Î »ç¿ëÇÒ ¼ö ÀÖ½À´Ï´Ù.
+    public float hapticSensitivity = 1.5f; // ì´ ê°’ì€ ì´ì œ ì‚¬ìš©ë˜ì§€ ì•Šì§€ë§Œ, TriggerHapticì—ì„œ ê³ ì •ëœ ê°•ë„ë¡œ ì‚¬ìš©í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
     public float hapticDuration = 0.05f;
 
     private float lastApertureValue;
@@ -72,24 +80,24 @@ public class EVController_Upgrade : MonoBehaviour
     void Awake()
     {
         if (globalVolume == null)
-            Debug.LogError("Global Volume ÂüÁ¶°¡ ÇÊ¿äÇÕ´Ï´Ù!");
+            Debug.LogError("Global Volume ì°¸ì¡°ê°€ í•„ìš”í•©ë‹ˆë‹¤!");
 
-        // Æ÷½ºÆ® ÇÁ·Î¼¼½Ì ÄÄÆ÷³ÍÆ® °¡Á®¿À±â
+        // í¬ìŠ¤íŠ¸ í”„ë¡œì„¸ì‹± ì»´í¬ë„ŒíŠ¸ ê°€ì ¸ì˜¤ê¸°
         globalVolume.profile.TryGet(out dof);
         globalVolume.profile.TryGet(out mb);
         globalVolume.profile.TryGet(out color);
         globalVolume.profile.TryGet(out filmGrain);
 
-        // --- [¼öÁ¤µÊ] ½½¶óÀÌ´õ ¼³Á¤ ¹× ÀÌº¥Æ® ¿¬°á ---
-        // Unity Inspector¿¡¼­ ÀÌ ½½¶óÀÌ´õµéÀÇ 'Whole Numbers'¸¦ true·Î ¼³Á¤ÇØ¾ß ÇÕ´Ï´Ù.
-        // Aperture: Min 0, Max 7
-        // Shutter:  Min 0, Max 7
-        // ISO:      Min 0, Max 6
+        // --- [ìˆ˜ì •ë¨] ìŠ¬ë¼ì´ë” ì„¤ì • ë° ì´ë²¤íŠ¸ ì—°ê²° ---
+        // Unity Inspectorì—ì„œ ì´ ìŠ¬ë¼ì´ë”ë“¤ì˜ 'Whole Numbers'ë¥¼ trueë¡œ ì„¤ì •í•´ì•¼ í•©ë‹ˆë‹¤.
+        // Aperture: Min 0, Max 10
+        // Shutter:  Min 0, Max 24
+        // ISO:      Min 0, Max 9
         InitializeSlider(apertureSlider, OnApertureSliderChanged, apertureValues.Length - 1, ref lastApertureValue);
         InitializeSlider(shutterSlider, OnShutterSliderChanged, shutterSpeedValues.Length - 1, ref lastShutterValue);
         InitializeSlider(isoSlider, OnIsoSliderChanged, isoValues.Length - 1, ref lastIsoValue);
 
-        // --- ÃÊ±â°ª Áï½Ã ¹İ¿µ ---
+        // --- ì´ˆê¸°ê°’ ì¦‰ì‹œ ë°˜ì˜ ---
         UpdateCameraEffects();
 
         if (worldCanvas != null)
@@ -102,7 +110,7 @@ public class EVController_Upgrade : MonoBehaviour
         {
             slider.minValue = 0;
             slider.maxValue = maxValue;
-            slider.wholeNumbers = true; // Á¤¼ö °ª¸¸ »ç¿ëÇÏµµ·Ï ¼³Á¤
+            slider.wholeNumbers = true; // ì •ìˆ˜ ê°’ë§Œ ì‚¬ìš©í•˜ë„ë¡ ì„¤ì •
             slider.onValueChanged.AddListener(listener);
             lastValueTracker = slider.value;
         }
@@ -118,10 +126,10 @@ public class EVController_Upgrade : MonoBehaviour
     private void OnApertureSliderChanged(float value)
     {
         UpdateCameraEffects();
-        // °ªÀÌ º¯°æµÉ ¶§¸¶´Ù ÇİÆ½ ¹ß»ı (´Ü°èº° "Å¬¸¯" ´À³¦)
+        // ê°’ì´ ë³€ê²½ë  ë•Œë§ˆë‹¤ í–…í‹± ë°œìƒ (ë‹¨ê³„ë³„ "í´ë¦­" ëŠë‚Œ)
         if (value != lastApertureValue)
         {
-            TriggerHaptic(0.5f); // 0.5f °­µµ·Î ÇİÆ½
+            TriggerHaptic(0.5f); // 0.5f ê°•ë„ë¡œ í–…í‹±
             lastApertureValue = value;
         }
     }
@@ -147,16 +155,16 @@ public class EVController_Upgrade : MonoBehaviour
     }
 
     /// <summary>
-    /// [ÇÙ½É ¼öÁ¤] 3°³ÀÇ ½½¶óÀÌ´õ 'ÀÎµ¦½º' °ªÀ» ±â¹İÀ¸·Î ½ÇÁ¦ °ªÀ» Ã£¾Æ È¿°ú¸¦ ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù.
+    /// [í•µì‹¬ ìˆ˜ì •] 3ê°œì˜ ìŠ¬ë¼ì´ë” 'ì¸ë±ìŠ¤' ê°’ì„ ê¸°ë°˜ìœ¼ë¡œ ì‹¤ì œ ê°’ì„ ì°¾ì•„ íš¨ê³¼ë¥¼ ì—…ë°ì´íŠ¸í•©ë‹ˆë‹¤.
     /// </summary>
     private void UpdateCameraEffects()
     {
-        // ½½¶óÀÌ´õ¿¡¼­ ÇöÀç ÀÎµ¦½º(Á¤¼ö) °¡Á®¿À±â
-        int apertureIndex = (apertureSlider != null) ? (int)apertureSlider.value : 3; // ±âº»°ª f/4.0 (ÀÎµ¦½º 3)
-        int shutterIndex = (shutterSlider != null) ? (int)shutterSlider.value : 3; // ±âº»°ª 1/125s (ÀÎµ¦½º 3)
-        int isoIndex = (isoSlider != null) ? (int)isoSlider.value : 2;     // ±âº»°ª 400 (ÀÎµ¦½º 2)
+        // ìŠ¬ë¼ì´ë”ì—ì„œ í˜„ì¬ ì¸ë±ìŠ¤(ì •ìˆ˜) ê°€ì ¸ì˜¤ê¸°
+        int apertureIndex = (apertureSlider != null) ? (int)apertureSlider.value : 3;
+        int shutterIndex = (shutterSlider != null) ? (int)shutterSlider.value : 18;
+        int isoIndex = (isoSlider != null) ? (int)isoSlider.value : 3;
 
-        // --- 1. Á¶¸®°³ (Aperture) °è»ê ¹× Àû¿ë ---
+        // --- 1. ì¡°ë¦¬ê°œ (Aperture) ê³„ì‚° ë° ì ìš© ---
         float currentAperture = apertureValues[apertureIndex];
         if (dof != null)
         {
@@ -167,14 +175,14 @@ public class EVController_Upgrade : MonoBehaviour
             apertureText.text = $"f/{currentAperture:F1}";
         }
 
-        // --- 2. ¼ÅÅÍ ¼Óµµ (Shutter Speed) °è»ê ¹× Àû¿ë ---
-        float currentShutterSpeed = shutterSpeedValues[shutterIndex]; // °ª (ÃÊ)
-        string currentShutterLabel = shutterSpeedLabels[shutterIndex]; // ·¹ÀÌºí (¹®ÀÚ¿­)
+        // --- 2. ì…”í„° ì†ë„ (Shutter Speed) ê³„ì‚° ë° ì ìš© ---
+        float currentShutterSpeed = shutterSpeedValues[shutterIndex]; // ê°’ (ì´ˆ)
+        string currentShutterLabel = shutterSpeedLabels[shutterIndex]; // ë ˆì´ë¸” (ë¬¸ìì—´)
 
         if (mb != null)
         {
-            // ¼ÅÅÍ ¼Óµµ°¡ ´À¸±¼ö·Ï(ÀÎµ¦½º°¡ ³·À»¼ö·Ï) ¸ğ¼Ç ºí·¯ °­µµ¸¦ ³ôÀÔ´Ï´Ù.
-            float shutterT = (float)shutterIndex / (shutterSpeedValues.Length - 1); // 0 (´À¸²) ~ 1 (ºü¸§)
+            // ì…”í„° ì†ë„ê°€ ëŠë¦´ìˆ˜ë¡(ì¸ë±ìŠ¤ê°€ ë‚®ì„ìˆ˜ë¡) ëª¨ì…˜ ë¸”ëŸ¬ ê°•ë„ë¥¼ ë†’ì…ë‹ˆë‹¤.
+            float shutterT = (float)shutterIndex / (shutterSpeedValues.Length - 1); // 0 (ëŠë¦¼) ~ 1 (ë¹ ë¦„)
             mb.intensity.value = Mathf.Lerp(maxBlurIntensity, 0, shutterT);
         }
         if (shutterText != null)
@@ -182,13 +190,13 @@ public class EVController_Upgrade : MonoBehaviour
             shutterText.text = currentShutterLabel;
         }
 
-        // --- 3. ISO °è»ê ¹× Àû¿ë ---
+        // --- 3. ISO ê³„ì‚° ë° ì ìš© ---
         int currentIso = isoValues[isoIndex];
 
         if (filmGrain != null)
         {
-            // ISO°¡ ³ôÀ»¼ö·Ï(ÀÎµ¦½º°¡ ³ôÀ»¼ö·Ï) ³ëÀÌÁî °­µµ¸¦ ³ôÀÔ´Ï´Ù.
-            float isoT = (float)isoIndex / (isoValues.Length - 1); // 0 (100) ~ 1 (6400)
+            // ISOê°€ ë†’ì„ìˆ˜ë¡(ì¸ë±ìŠ¤ê°€ ë†’ì„ìˆ˜ë¡) ë…¸ì´ì¦ˆ ê°•ë„ë¥¼ ë†’ì…ë‹ˆë‹¤.
+            float isoT = (float)isoIndex / (isoValues.Length - 1); // 0 (50) ~ 1 (8000)
             filmGrain.intensity.value = Mathf.Lerp(0, maxGrainIntensity, isoT);
         }
         if (isoText != null)
@@ -196,69 +204,69 @@ public class EVController_Upgrade : MonoBehaviour
             isoText.text = $"{currentIso}";
         }
 
-        // --- 4. [¼öÁ¤µÊ] ½ÇÁ¦ °ø½ÄÀ¸·Î ³ëÃâ(Exposure) °è»ê ---
+        // --- 4. [ìˆ˜ì •ë¨] ì‹¤ì œ ê³µì‹ìœ¼ë¡œ ë…¸ì¶œ(Exposure) ê³„ì‚° ---
         if (color != null)
         {
             float t = currentShutterSpeed;
             float N = currentAperture;
             float ISO = (float)currentIso;
 
-            // EV100 (ISO 100 ±âÁØ EV) °è»ê: EV = log©ü(N©÷ / t)
+            // EV100 (ISO 100 ê¸°ì¤€ EV) ê³„ì‚°: EV = logâ‚‚(NÂ² / t)
             float EV100_setting = Log2((N * N) / t);
 
-            // ISO º¸Á¤°ª(½ºÅ¾ ´ÜÀ§) °è»ê: SV = log©ü(ISO / 100)
+            // ISO ë³´ì •ê°’(ìŠ¤íƒ‘ ë‹¨ìœ„) ê³„ì‚°: SV = logâ‚‚(ISO / 100)
             float isoCompensation_SV = Log2(ISO / 100.0f);
 
-            // Ä«¸Ş¶óÀÇ ÃÖÁ¾ À¯È¿ ³ëÃâ°ª: EffectiveEV = EV100 - SV
+            // ì¹´ë©”ë¼ì˜ ìµœì¢… ìœ íš¨ ë…¸ì¶œê°’: EffectiveEV = EV100 - SV
             float effectiveEV = EV100_setting - isoCompensation_SV;
 
-            // ¾ÀÀÇ ±âÁØ EV(sceneBaselineEV)¿Í Ä«¸Ş¶óÀÇ À¯È¿ EV(effectiveEV)ÀÇ Â÷ÀÌ¸¦ °è»ê
-            // ÀÌ Â÷ÀÌ°¡ UnityÀÇ Post Exposure °ªÀÌ µË´Ï´Ù.
+            // ì”¬ì˜ ê¸°ì¤€ EV(sceneBaselineEV)ì™€ ì¹´ë©”ë¼ì˜ ìœ íš¨ EV(effectiveEV)ì˜ ì°¨ì´ë¥¼ ê³„ì‚°
+            // ì´ ì°¨ì´ê°€ Unityì˜ Post Exposure ê°’ì´ ë©ë‹ˆë‹¤.
             // postExposure = sceneBaselineEV - effectiveEV
-            // (¿¹: ¾À(13)ÀÌ Ä«¸Ş¶ó(12)º¸´Ù 1½ºÅ¾ ¹àÀ¸¸é, postExposure = +1.0 ÀÌ µÇ¾î ÀÌ¹ÌÁö¸¦ ¹à°Ô º¸Á¤)
+            // (ì˜ˆ: ì”¬(13)ì´ ì¹´ë©”ë¼(12)ë³´ë‹¤ 1ìŠ¤íƒ‘ ë°ìœ¼ë©´, postExposure = +1.0 ì´ ë˜ì–´ ì´ë¯¸ì§€ë¥¼ ë°ê²Œ ë³´ì •)
             float postExposureValue = sceneBaselineEV - effectiveEV;
 
             color.postExposure.value = postExposureValue;
 
-            // [Ãß°¡] EV ¹ÌÅÍ±â ¾÷µ¥ÀÌÆ®
-            if (evText != null)
+            // [ì¶”ê°€] EV ë¯¸í„°ê¸° ì—…ë°ì´íŠ¸
+            /*if (evText != null)
             {
-                // »ç¿ëÀÚ°¡ ¾ÀÀÇ ±âÁØ(sceneBaselineEV)¿¡¼­ ¾ó¸¶³ª ¹ş¾î³µ´ÂÁö Ç¥½ÃÇÕ´Ï´Ù.
-                // À§¿¡¼­ °è»êÇÑ postExposureValue´Â 'º¸Á¤'°ªÀÌ¹Ç·Î, »ç¿ëÀÚ¿¡°Ô´Â ¹İ´ë ¹æÇâÀ» Ç¥½ÃÇØ¾ß ÇÕ´Ï´Ù.
-                // (¿¹: postExposureValue°¡ +1 (¾Àº¸´Ù 1½ºÅ¾ ¾îµÓ°Ô ÂïÈû) -> ¹ÌÅÍ±â´Â -1 (³ëÃâ ºÎÁ·) Ç¥½Ã)
-                // ÇÏÁö¸¸ ½Ã¹Ä·¹ÀÌÅÍ¿¡¼­´Â "ÇöÀç ¼³Á¤ÀÇ EV°¡ ¾ÀÀÇ EVº¸´Ù ¾ó¸¶³ª ³ôÀº°¡/³·Àº°¡"¸¦ º¸¿©ÁÖ´Â °ÍÀÌ ´õ Á÷°üÀûÀÏ ¼ö ÀÖ½À´Ï´Ù.
-                // ¿©±â¼­´Â HTML ½Ã¹Ä·¹ÀÌÅÍ¿Í À¯»çÇÏ°Ô "ÀûÁ¤ ³ëÃâ(0) ´ëºñ Â÷ÀÌ"¸¦ Ç¥½ÃÇÕ´Ï´Ù.
-                // HTML ½Ã¹Ä·¹ÀÌÅÍ ·ÎÁ÷: 9 - (Av + Tv - Sv) = 9 - effectiveEV
-                // ¿©±â¼­ 9´Â ÀÓÀÇÀÇ ±âÁØÁ¡ÀÔ´Ï´Ù. ¿ì¸®´Â sceneBaselineEV¸¦ »ç¿ëÇÕ´Ï´Ù.
+                // ì‚¬ìš©ìê°€ ì”¬ì˜ ê¸°ì¤€(sceneBaselineEV)ì—ì„œ ì–¼ë§ˆë‚˜ ë²—ì–´ë‚¬ëŠ”ì§€ í‘œì‹œí•©ë‹ˆë‹¤.
+                // ìœ„ì—ì„œ ê³„ì‚°í•œ postExposureValueëŠ” 'ë³´ì •'ê°’ì´ë¯€ë¡œ, ì‚¬ìš©ìì—ê²ŒëŠ” ë°˜ëŒ€ ë°©í–¥ì„ í‘œì‹œí•´ì•¼ í•©ë‹ˆë‹¤.
+                // (ì˜ˆ: postExposureValueê°€ +1 (ì”¬ë³´ë‹¤ 1ìŠ¤íƒ‘ ì–´ë‘¡ê²Œ ì°í˜) -> ë¯¸í„°ê¸°ëŠ” -1 (ë…¸ì¶œ ë¶€ì¡±) í‘œì‹œ)
+                // í•˜ì§€ë§Œ ì‹œë®¬ë ˆì´í„°ì—ì„œëŠ” "í˜„ì¬ ì„¤ì •ì˜ EVê°€ ì”¬ì˜ EVë³´ë‹¤ ì–¼ë§ˆë‚˜ ë†’ì€ê°€/ë‚®ì€ê°€"ë¥¼ ë³´ì—¬ì£¼ëŠ” ê²ƒì´ ë” ì§ê´€ì ì¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+                // ì—¬ê¸°ì„œëŠ” HTML ì‹œë®¬ë ˆì´í„°ì™€ ìœ ì‚¬í•˜ê²Œ "ì ì • ë…¸ì¶œ(0) ëŒ€ë¹„ ì°¨ì´"ë¥¼ í‘œì‹œí•©ë‹ˆë‹¤.
+                // HTML ì‹œë®¬ë ˆì´í„° ë¡œì§: 9 - (Av + Tv - Sv) = 9 - effectiveEV
+                // ì—¬ê¸°ì„œ 9ëŠ” ì„ì˜ì˜ ê¸°ì¤€ì ì…ë‹ˆë‹¤. ìš°ë¦¬ëŠ” sceneBaselineEVë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
 
                 float userEV_Display = sceneBaselineEV - effectiveEV;
 
-                // +- 0.5 ½ºÅ¾ ÀÌ³»¸é ÀûÁ¤ ³ëÃâ·Î °£ÁÖ
+                // +- 0.5 ìŠ¤íƒ‘ ì´ë‚´ë©´ ì ì • ë…¸ì¶œë¡œ ê°„ì£¼
                 string evStatus;
-                if (userEV_Display > 0.5) evStatus = "³ëÃâ °ú´Ù (+)";
-                else if (userEV_Display < -0.5) evStatus = "³ëÃâ ºÎÁ· (-)";
-                else evStatus = "ÀûÁ¤ ³ëÃâ";
+                if (userEV_Display > 0.5) evStatus = "ë…¸ì¶œ ê³¼ë‹¤ (+)";
+                else if (userEV_Display < -0.5) evStatus = "ë…¸ì¶œ ë¶€ì¡± (-)";
+                else evStatus = "ì ì • ë…¸ì¶œ";
 
                 evText.text = $"EV: {userEV_Display:F1} ({evStatus})";
-            }
+            }*/
         }
     }
 
     /// <summary>
-    /// Mathf.Log(f, 2) (Log base 2)¸¦ °è»êÇÏ´Â ÇïÆÛ ÇÔ¼ö
+    /// Mathf.Log(f, 2) (Log base 2)ë¥¼ ê³„ì‚°í•˜ëŠ” í—¬í¼ í•¨ìˆ˜
     /// </summary>
     private float Log2(float value)
     {
-        if (value <= 0) return 0; // ·Î±× ¿À·ù ¹æÁö
+        if (value <= 0) return 0; // ë¡œê·¸ ì˜¤ë¥˜ ë°©ì§€
         return Mathf.Log(value) / LOG_BASE_2;
     }
 
-    // --- ÇİÆ½ ·ÎÁ÷ ---
-    // CalculateSpeed´Â ´õ ÀÌ»ó ÇÊ¿äÇÏÁö ¾Ê½À´Ï´Ù.
+    // --- í–…í‹± ë¡œì§ ---
+    // CalculateSpeedëŠ” ë” ì´ìƒ í•„ìš”í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
 
     private void TriggerHaptic(float amplitude)
     {
-        // ÀÌ¹Ì ÁøÇà ÁßÀÎ ÇİÆ½ÀÌ ÀÖ´Ù¸é ÁßÁöÇÏ°í »õ·Î ½ÃÀÛ
+        // ì´ë¯¸ ì§„í–‰ ì¤‘ì¸ í–…í‹±ì´ ìˆë‹¤ë©´ ì¤‘ì§€í•˜ê³  ìƒˆë¡œ ì‹œì‘
         if (hapticCoroutine != null)
         {
             StopCoroutine(hapticCoroutine);
