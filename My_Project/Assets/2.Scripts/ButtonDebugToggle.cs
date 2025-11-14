@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ButtonDebugToggle : MonoBehaviour
 {
-    public DialUIController uiController;
+    public EVController_Upgrade uiController;
 
     private void OnTriggerEnter(Collider other)
     {
