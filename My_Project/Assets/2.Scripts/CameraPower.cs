@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections; // [추가] 햅틱 코루틴을 위해 필요
+using OVR; // [추가] 햅틱 입력을 위해 필요
 
 public class CameraPower : MonoBehaviour
 {
@@ -15,6 +17,18 @@ public class CameraPower : MonoBehaviour
     [Header("Rotation Logic")]
     [Tooltip("이 각도를 초과하면 ON으로 간주합니다. (예: 15)")]
     public float onAngleThreshold = -15f;
+
+    [Header("Haptics")] // [추가]
+    [Tooltip("ON으로 켤 때의 햅틱 강도 (0.0 ~ 1.0)")]
+    public float onHapticAmplitude = 0.8f;
+    [Tooltip("ON으로 켤 때의 햅틱 지속시간 (초)")]
+    public float onHapticDuration = 0.1f;
+    [Space]
+    [Tooltip("OFF로 끌 때의 햅틱 강도 (0.0 ~ 1.0)")]
+    public float offHapticAmplitude = 0.5f;
+    [Tooltip("OFF로 끌 때의 햅틱 지속시간 (초)")]
+    public float offHapticDuration = 0.05f;
+
 
     // Z축 회전을 읽도록 고정 (OneGrabRotateTransformer의 Z축 설정과 일치)
     private const RotationAxis axisToRead = RotationAxis.Z;
@@ -54,6 +68,9 @@ public class CameraPower : MonoBehaviour
             {
                 lcdScreenRenderer.material = onScreenMaterial;
                 isScreenOn = true;
+
+                // [추가] ON 햅틱 실행
+                TriggerHaptic(onHapticDuration, onHapticAmplitude);
             }
         }
         else
@@ -63,7 +80,29 @@ public class CameraPower : MonoBehaviour
             {
                 lcdScreenRenderer.material = blackScreenMaterial;
                 isScreenOn = false;
+
+                // [추가] OFF 햅틱 실행
+                TriggerHaptic(offHapticDuration, offHapticAmplitude);
             }
         }
+    }
+
+    // --- [추가] 햅틱 헬퍼 함수들 ---
+
+    private void TriggerHaptic(float duration, float amplitude)
+    {
+        // 햅틱은 오른쪽 컨트롤러에서 울린다고 가정합니다.
+        StartCoroutine(VibrateForDuration(duration, amplitude, OVRInput.Controller.RTouch));
+    }
+
+    private IEnumerator VibrateForDuration(float duration, float amplitude, OVRInput.Controller controller)
+    {
+        // 햅틱 시작
+        OVRInput.SetControllerVibration(1, amplitude, controller);
+
+        yield return new WaitForSeconds(duration);
+
+        // 햅틱 중지
+        OVRInput.SetControllerVibration(0, 0, controller);
     }
 }
