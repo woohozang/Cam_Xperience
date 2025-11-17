@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections; // [추가] 햅틱 코루틴
+using OVR; // [추가] 햅틱 입력
 
 public class LensZoomController : MonoBehaviour
 {
@@ -6,42 +8,40 @@ public class LensZoomController : MonoBehaviour
     public Camera lensCamera;
 
     [Header("Zoom (Field of View)")]
-    [Tooltip("줌 아웃(넓은 화각)일 때의 FoV. (예: 84도)")]
     public float wideFoV = 84f;
-    [Tooltip("줌 인(좁은 화각)일 때의 FoV. (예: 23도)")]
     public float telephotoFoV = 23f;
-
-    [Tooltip("시작 시 적용할 기본 FoV 값")]
-    public float defaultFoV = 60f; // [추가]
+    public float defaultFoV = 60f;
 
     [Header("Rotation Mapping")]
-    [Tooltip("OneGrabRotateTransformer의 Min Angle (-45)과 일치")]
     public float minRotationAngle = -45f;
-    [Tooltip("OneGrabRotateTransformer의 Max Angle (45)과 일치")]
     public float maxRotationAngle = 45f;
-
     public enum RotationAxis { X, Y, Z }
-    [Tooltip("OneGrabRotateTransformer에서 회전을 허용한 축 (Y 또는 Z)")]
     public RotationAxis axisToRead = RotationAxis.Y;
 
-    void Start() // [추가된 함수]
+    [Header("Haptics")] // [추가]
+    [Tooltip("회전 속도에 따른 햅틱 민감도")]
+    public float hapticSensitivity = 0.5f;
+    [Tooltip("햅틱 1회당 지속시간")]
+    public float hapticDuration = 0.05f;
+    [Tooltip("햅틱이 울리기 시작하는 최소 회전 속도 (deg/sec)")]
+    public float minRotationSpeedForHaptic = 10f; // [추가]
+
+    // --- Private Variables ---
+    private float lastAngle = 0f; // [추가]
+    private Coroutine hapticCoroutine; // [추가]
+
+    void Start() // [Awake()에서 Start()로 변경]
     {
         if (lensCamera != null)
         {
-            // 1. 시작 시 카메라 FoV를 기본값 60으로 설정
             lensCamera.fieldOfView = defaultFoV;
         }
 
-        // 2. [중요] 60 FoV에 해당하는 링의 '초기 각도'를 계산
-        // 60 FoV가 0.0~1.0 사이의 어느 비율인지 계산 (InverseLerp)
+        // --- 초기 각도 설정 (기존과 동일) ---
         float initialNormalizedAngle = Mathf.InverseLerp(wideFoV, telephotoFoV, defaultFoV);
         initialNormalizedAngle = Mathf.Clamp01(initialNormalizedAngle);
-
-        // 그 비율에 해당하는 실제 회전 각도를 계산 (Lerp)
         float initialAngle = Mathf.Lerp(minRotationAngle, maxRotationAngle, initialNormalizedAngle);
 
-        // 3. 링(이 스크립트가 붙은 오브젝트)의 로컬 회전 값을 설정
-        // (이래야 Update()가 첫 프레임부터 60 FoV를 읽음)
         Vector3 currentEuler = transform.localEulerAngles;
         switch (axisToRead)
         {
@@ -55,13 +55,47 @@ public class LensZoomController : MonoBehaviour
                 transform.localEulerAngles = new Vector3(currentEuler.x, currentEuler.y, initialAngle);
                 break;
         }
+
+        lastAngle = initialAngle;
     }
 
     void Update()
     {
         if (lensCamera == null) return;
 
-        // 1. 현재 설정된 축의 회전 각도를 읽습니다.
+        // 1. 현재 회전 각도를 읽습니다.
+        float currentAngle = GetCurrentAxisAngle();
+
+        // --- [수정됨] 햅틱 로직 (Update 안에 통합) ---
+        float rotationSpeed = 0f;
+        if (Time.deltaTime > 0f)
+        {
+            // 이전 프레임 대비 각도 변화량(속도) 계산 (초당 각도)
+            rotationSpeed = Mathf.Abs(currentAngle - lastAngle) / Time.deltaTime;
+        }
+
+        // 속도에 기반해 햅틱 실행
+        TriggerHaptic(rotationSpeed);
+
+        // 다음 프레임을 위해 현재 각도 저장
+        lastAngle = currentAngle;
+        // --- 햅틱 로직 끝 ---
+
+
+        // 2. 현재 각도를 0.0 ~ 1.0 비율로 정규화
+        float normalizedAngle = Mathf.InverseLerp(minRotationAngle, maxRotationAngle, currentAngle);
+        normalizedAngle = Mathf.Clamp01(normalizedAngle);
+
+        // 3. FoV 값 계산
+        float newFoV = Mathf.Lerp(wideFoV, telephotoFoV, normalizedAngle);
+
+        // 4. 카메라 FoV 업데이트
+        lensCamera.fieldOfView = newFoV;
+    }
+
+    // [추가] 현재 각도를 읽어오는 헬퍼 함수
+    private float GetCurrentAxisAngle()
+    {
         float currentAngle = 0;
         Vector3 eulerAngles = transform.localEulerAngles;
 
@@ -77,15 +111,43 @@ public class LensZoomController : MonoBehaviour
                 currentAngle = (eulerAngles.z > 180f) ? eulerAngles.z - 360f : eulerAngles.z;
                 break;
         }
+        return currentAngle;
+    }
 
-        // 2. 현재 각도를 0.0 ~ 1.0 비율로 정규화합니다.
-        float normalizedAngle = Mathf.InverseLerp(minRotationAngle, maxRotationAngle, currentAngle);
-        normalizedAngle = Mathf.Clamp01(normalizedAngle);
+    // --- [추가] 햅틱 헬퍼 함수들 ---
+    private void TriggerHaptic(float speed)
+    {
+        // [수정] 최소 속도(예: 10도/초) 미만이면 햅틱 중지
+        if (speed < minRotationSpeedForHaptic)
+        {
+            StopHaptics();
+            return;
+        }
 
-        // 3. 0~1 비율을 사용하여 FoV 값을 계산
-        float newFoV = Mathf.Lerp(wideFoV, telephotoFoV, normalizedAngle);
+        float dynamicAmplitude = Mathf.Clamp01(speed * hapticSensitivity);
 
-        // 4. 렌즈 카메라의 Field of View 값을 업데이트합니다.
-        lensCamera.fieldOfView = newFoV;
+        if (hapticCoroutine != null)
+        {
+            StopCoroutine(hapticCoroutine);
+        }
+        hapticCoroutine = StartCoroutine(VibrateForDuration(hapticDuration, dynamicAmplitude));
+    }
+
+    private void StopHaptics()
+    {
+        if (hapticCoroutine != null)
+        {
+            StopCoroutine(hapticCoroutine);
+            hapticCoroutine = null;
+        }
+        OVRInput.SetControllerVibration(0, 0, OVRInput.Controller.RTouch);
+    }
+
+    private IEnumerator VibrateForDuration(float duration, float amplitude)
+    {
+        OVRInput.SetControllerVibration(1, amplitude, OVRInput.Controller.RTouch);
+        yield return new WaitForSeconds(duration);
+        OVRInput.SetControllerVibration(0, 0, OVRInput.Controller.RTouch);
+        hapticCoroutine = null;
     }
 }
