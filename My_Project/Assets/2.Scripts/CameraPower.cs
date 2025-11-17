@@ -14,7 +14,7 @@ public class CameraPower : MonoBehaviour
 
     [Header("Rotation Logic")]
     [Tooltip("이 각도를 초과하면 ON으로 간주합니다. (예: 15)")]
-    public float onAngleThreshold = 15f;
+    public float onAngleThreshold = -15f;
 
     // Z축 회전을 읽도록 고정 (OneGrabRotateTransformer의 Z축 설정과 일치)
     private const RotationAxis axisToRead = RotationAxis.Z;
@@ -39,28 +39,30 @@ public class CameraPower : MonoBehaviour
     {
         if (lcdScreenRenderer == null) return;
 
-        // 1. 현재 Z축 회전 각도를 읽습니다.
+        // 1. 현재 Z축 회전 각도를 읽습니다. (0 ~ -30)
         float currentAngle = 0;
         Vector3 eulerAngles = transform.localEulerAngles;
+
+        // [수정] 0~360 범위를 -180~180 범위로 변환
         currentAngle = (eulerAngles.z > 180f) ? eulerAngles.z - 360f : eulerAngles.z;
 
-        // 2. 'OFF' 각도 임계값(15도) '미만'인지 확인
+        // 2. 'ON' 각도 임계값(-15) '미만'인지 확인 (즉, -30에 가까운지)
         if (currentAngle < onAngleThreshold)
         {
-            // [요구사항 3] OFF로 돌리면 다시 검은 화면
-            if (isScreenOn && blackScreenMaterial != null)
-            {
-                lcdScreenRenderer.material = blackScreenMaterial;
-                isScreenOn = false;
-            }
-        }
-        else
-        {
-            // [요구사항 2] ON으로 돌리면 (즉, 15도 이상이면) 스크린샷 화면
+            // [수정] ON으로 돌리면 스크린샷 화면
             if (!isScreenOn && onScreenMaterial != null)
             {
                 lcdScreenRenderer.material = onScreenMaterial;
                 isScreenOn = true;
+            }
+        }
+        else
+        {
+            // [수정] OFF로 돌리면 (즉, -15 ~ 0 사이면) 검은 화면
+            if (isScreenOn && blackScreenMaterial != null)
+            {
+                lcdScreenRenderer.material = blackScreenMaterial;
+                isScreenOn = false;
             }
         }
     }
