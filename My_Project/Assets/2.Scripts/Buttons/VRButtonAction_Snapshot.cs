@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using OVR;   // OVRInput 사용
 
 public class VRButtonAction_Snapshot : MonoBehaviour
 {
@@ -21,13 +22,47 @@ public class VRButtonAction_Snapshot : MonoBehaviour
     public float lcdPhotoDuration = 2f;
     public float flashDuration = 0.1f;
 
-    private float lastPressTime = 0f;
+    [Header("Input")]
+    public OVRInput.Controller captureController = OVRInput.Controller.RTouch;           // 어느 컨트롤러?
+    public OVRInput.Button captureTrigger = OVRInput.Button.PrimaryIndexTrigger;        // 어떤 버튼? (트리거)
 
+    private float lastPressTime = 0f;
+    private bool handInside = false;   // 손가락이 셔터 위에 있는지 상태
+
+    // --- 충돌 체크 -----------------------------
     private void OnTriggerEnter(Collider other)
     {
-     if (!other.CompareTag("Hand")) return;
+        if (other.CompareTag("Hand"))
+        {
+            handInside = true;
+        }
+    }
 
-        // 쿨다운 방지
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Hand"))
+        {
+            handInside = false;
+        }
+    }
+
+    // --- 버튼 입력 체크 -------------------------
+    private void Update()
+    {
+        // 손가락이 셔터 콜라이더 안에 있을 때만
+        if (!handInside) return;
+
+        // 트리거 버튼을 '방금' 눌렀는지 체크
+        if (OVRInput.GetDown(captureTrigger, captureController))
+        {
+            TryCapture();
+        }
+    }
+
+    // --- 실제 촬영 로직 ------------------------
+    private void TryCapture()
+    {
+        // 쿨다운
         if (Time.time - lastPressTime < cooldown) return;
         lastPressTime = Time.time;
 
@@ -38,16 +73,16 @@ public class VRButtonAction_Snapshot : MonoBehaviour
             return;
         }
 
-        // 셔터 사운드
-        if (audioSource != null && shutterSound != null)
-            audioSource.PlayOneShot(shutterSound, 0.8f);
-
-        // 현재 LCD가 켜져 있는지 확인
+        // LCD 꺼져 있으면 촬영 불가
         if (!screenController.IsOn())
         {
             Debug.Log("[Snapshot] LCD is OFF — cannot capture.");
             return;
         }
+
+        // 셔터 사운드
+        if (audioSource != null && shutterSound != null)
+            audioSource.PlayOneShot(shutterSound, 0.8f);
 
         // 현재 화면 텍스처 가져오기
         Texture current = screenController.GetCurrentTexture();
@@ -80,34 +115,32 @@ public class VRButtonAction_Snapshot : MonoBehaviour
             worldQuadRenderer.material.mainTexture = defaultWorldTexture;
         }
     }
+
     private IEnumerator ShowPhotoOnLCD(Texture snapshot)
     {
-        // 플래시 효과 (촬영 순간)
+        // 플래시 효과
         StartCoroutine(LCDFlashEffect());
 
         // LCD에 사진 표시
         screenRenderer.material.mainTexture = snapshot;
 
-        // 2초간 유지
+        // 지정 시간 유지
         yield return new WaitForSeconds(lcdPhotoDuration);
 
         // 기본 화면 복귀
         screenRenderer.material.mainTexture = defaultLCDTexture;
     }
-    
-        private IEnumerator LCDFlashEffect()
+
+    private IEnumerator LCDFlashEffect()
     {
         if (screenRenderer == null) yield break;
 
-        // 원래 색상 백업
         Material mat = screenRenderer.material;
         Color originalColor = mat.color;
 
-        // 밝게 (플래시)
         mat.color = Color.white;
         yield return new WaitForSeconds(flashDuration);
 
-        // 원래 색상 복원
         mat.color = originalColor;
     }
 }
