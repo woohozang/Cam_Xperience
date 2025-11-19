@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
-using UnityEngine.UI;          // ★ LCD 텍스트용
+using UnityEngine.UI;
 using System.Collections;
 using OVR;
 
@@ -15,6 +15,9 @@ public class VRShutterHalfPress : MonoBehaviour
     [Header("Global Volume")]
     public Volume globalVolume;
     private DepthOfField dof;
+
+    [Header("LCD / Screen State")]
+    public CameraScreenController screenController; // ★ LCD 상태 확인용
 
     [Header("Feedback Settings")]
     public AudioSource sfx;
@@ -62,8 +65,11 @@ public class VRShutterHalfPress : MonoBehaviour
         {
             lastFocusTime = Time.time;
             float dist = Autofocus();
-            ShowFocusUI(dist);
-            GiveFeedback();
+            if (dist > 0f)
+            {
+                ShowFocusUI(dist);
+                GiveFeedback();
+            }
         }
     }
 
@@ -72,6 +78,28 @@ public class VRShutterHalfPress : MonoBehaviour
     /// </summary>
     float Autofocus()
     {
+        // 🔒 1) 전원 꺼져 있으면 AF 동작 X
+        if (VRPowerManager.Instance == null || !VRPowerManager.Instance.IsPowerOn)
+        {
+            Debug.Log("[AF] Power OFF – ignore AF.");
+            return 0f;
+        }
+
+        // 🔒 2) LCD 꺼져 있으면 AF 동작 X
+        if (screenController == null || !screenController.IsOn())
+        {
+            Debug.Log("[AF] LCD OFF – ignore AF.");
+            return 0f;
+        }
+
+        // 🔒 3) 현재 LCD가 RenderTexture(라이브뷰)일 때만 AF
+        Texture currentTex = screenController.GetCurrentTexture();
+        if (!(currentTex is RenderTexture))
+        {
+            Debug.Log("[AF] Not live view (no RenderTexture) – ignore AF.");
+            return 0f;
+        }
+
         if (dof == null || lensOrigin == null) return 0f;
 
         float focusedDistance;
