@@ -7682,6 +7682,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a241089d50377eb4e9208325c2303c70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 1789213438}
   moveSpeed: 2
   rotationType: 1
   rotationSpeed: 60
@@ -12969,6 +12970,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a241089d50377eb4e9208325c2303c70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 0}
   moveSpeed: 2
   rotationType: 1
   rotationSpeed: 60
