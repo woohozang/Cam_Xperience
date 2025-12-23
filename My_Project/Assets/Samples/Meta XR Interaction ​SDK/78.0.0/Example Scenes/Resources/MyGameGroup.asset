@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7f04c07ecd6ce84aab090677fb9d914, type: 3}
+  m_Name: MyGameGroup
+  m_EditorClassIdentifier: 
+  _groupName: Tutorial
+  _groupEnabled: 1
+  _groupDisplayOrder: -2
+  _sceneInfos:
+  - DisplayName: df
+    SceneName: CameraTest
+    SceneGuid: 0a3668d2e9e9b7b4e8d8039638435e14
+    Thumbnail: {fileID: 21300000, guid: 1b30196ca66ece04f80c3809a3133644, type: 3}
+  - DisplayName: ISO
+    SceneName: ConcurrentHandsControllersExamples
+    SceneGuid: 10824ac1a08b9a0459de4c071e1db2aa
+    Thumbnail: {fileID: 21300000, guid: fa047035784b7564aa31af557d724fb4, type: 3}
+  - DisplayName: Sutterspeed
+    SceneName: UISetExamples
+    SceneGuid: 07e3686372a704147b219707ee3c6f62
+    Thumbnail: {fileID: 21300000, guid: 4e236ccd95d5ce541ad024c504327587, type: 3}
+  - DisplayName: a
+    SceneName: PokeExamples
+    SceneGuid: ada3086bde0ab18459589e22d8d9e182
+    Thumbnail: {fileID: 21300000, guid: b14c65405a4651e45a7d4d6718558ce0, type: 3}
+  _sceneInfoAssets:
+  - DisplayName: df
+    SceneAsset: {fileID: 102900000, guid: 0a3668d2e9e9b7b4e8d8039638435e14, type: 3}
+    Thumbnail: {fileID: 21300000, guid: 1b30196ca66ece04f80c3809a3133644, type: 3}
+  - DisplayName: ISO
+    SceneAsset: {fileID: 102900000, guid: 10824ac1a08b9a0459de4c071e1db2aa, type: 3}
+    Thumbnail: {fileID: 21300000, guid: fa047035784b7564aa31af557d724fb4, type: 3}
+  - DisplayName: Sutterspeed
+    SceneAsset: {fileID: 102900000, guid: 07e3686372a704147b219707ee3c6f62, type: 3}
+    Thumbnail: {fileID: 21300000, guid: 4e236ccd95d5ce541ad024c504327587, type: 3}
+  - DisplayName: a
+    SceneAsset: {fileID: 102900000, guid: ada3086bde0ab18459589e22d8d9e182, type: 3}
+    Thumbnail: {fileID: 21300000, guid: b14c65405a4651e45a7d4d6718558ce0, type: 3}

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ISDKExampleScenes
   m_EditorClassIdentifier: 
   _groupName: Samples
-  _groupEnabled: 1
+  _groupEnabled: 0
   _groupDisplayOrder: -1
   _sceneInfos:
   - DisplayName: Comprehensive
