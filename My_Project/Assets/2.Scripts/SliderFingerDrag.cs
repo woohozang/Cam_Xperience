@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(Collider))]
+/// <summary>
+/// [RequireComponent(typeof(Collider))]
+/// </summary>
 public class SliderFingerDrag : MonoBehaviour
 {
     [Header("References")]
