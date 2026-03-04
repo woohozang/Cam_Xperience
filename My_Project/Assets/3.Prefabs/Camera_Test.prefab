@@ -3814,6 +3814,8 @@ MonoBehaviour:
   cooldown: 0.5
   lcdPhotoDuration: 2
   flashDuration: 0.1
+  captureController: 2
+  captureTrigger: 8192
 --- !u!114 &5596291488514149404
 MonoBehaviour:
   m_ObjectHideFlags: 0
